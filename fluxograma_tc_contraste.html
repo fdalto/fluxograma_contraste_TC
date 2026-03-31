@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fluxograma TC com Contraste</title>
+  <style>
+    :root {
+      --bg: #f4f7fb;
+      --card: #ffffff;
+      --line: #d7dfeb;
+      --text: #1f2a37;
+      --muted: #5b6472;
+      --primary: #1d4ed8;
+      --primary-2: #dbeafe;
+      --good: #166534;
+      --good-bg: #dcfce7;
+      --warn: #92400e;
+      --warn-bg: #fef3c7;
+      --bad: #991b1b;
+      --bad-bg: #fee2e2;
+      --shadow: 0 10px 30px rgba(16, 24, 40, 0.08);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: linear-gradient(180deg, #eef4ff 0%, var(--bg) 100%);
+      color: var(--text);
+    }
+
+    .container {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 24px 16px 48px;
+    }
+
+    .hero {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+
+    .hero h1 {
+      margin: 0 0 10px;
+      font-size: 30px;
+      line-height: 1.15;
+    }
+
+    .hero p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.55;
+    }
+
+    .flow-area {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+    }
+
+    .node {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 20px;
+      display: none;
+      animation: fadeIn 0.25s ease;
+    }
+
+    .node.active { display: block; }
+
+    .step-badge {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: var(--primary-2);
+      color: var(--primary);
+      font-size: 12px;
+      font-weight: bold;
+      letter-spacing: 0.3px;
+      margin-bottom: 12px;
+    }
+
+    .node h2 {
+      margin: 0 0 10px;
+      font-size: 24px;
+    }
+
+    .node p, .node li {
+      color: var(--muted);
+      line-height: 1.55;
+      font-size: 16px;
+    }
+
+    .node ul {
+      margin: 10px 0 0 0;
+      padding-left: 20px;
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 16px;
+      padding: 14px 16px;
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: bold;
+      transition: transform 0.12s ease, opacity 0.12s ease, box-shadow 0.12s ease;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      opacity: 0.98;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+
+    .btn-secondary {
+      background: #e5e7eb;
+      color: #111827;
+    }
+
+    .btn-good {
+      background: var(--good-bg);
+      color: var(--good);
+    }
+
+    .btn-warn {
+      background: var(--warn-bg);
+      color: var(--warn);
+    }
+
+    .btn-bad {
+      background: var(--bad-bg);
+      color: var(--bad);
+    }
+
+    .result {
+      border-radius: 20px;
+      padding: 22px;
+      margin-top: 8px;
+    }
+
+    .result.good {
+      background: var(--good-bg);
+      border: 1px solid #bbf7d0;
+    }
+
+    .result.warn {
+      background: var(--warn-bg);
+      border: 1px solid #fde68a;
+    }
+
+    .result.bad {
+      background: var(--bad-bg);
+      border: 1px solid #fecaca;
+    }
+
+    .result h3 {
+      margin: 0 0 8px;
+      font-size: 26px;
+    }
+
+    .result p {
+      margin: 0;
+      font-size: 17px;
+      line-height: 1.6;
+      color: #1f2937;
+    }
+
+    .path-box {
+      background: #f8fafc;
+      border: 1px dashed var(--line);
+      border-radius: 16px;
+      padding: 14px;
+      margin-top: 18px;
+    }
+
+    .path-box strong {
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    .path-box ol {
+      margin: 0;
+      padding-left: 20px;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 18px;
+    }
+
+    .footer-note {
+      margin-top: 18px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 640px) {
+      .hero h1 { font-size: 24px; }
+      .node h2 { font-size: 21px; }
+      .result h3 { font-size: 22px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <section class="hero">
+      <h1>Fluxograma interativo para decidir uso de contraste em TC</h1>
+      <p>
+        Fluxo clicável baseado exatamente nos critérios que você definiu: avaliação inicial da hipótese clínica,
+        conferência com radiologista, triagem para creatinina e decisão final conforme o eGFR.
+      </p>
+      <div class="toolbar">
+        <button class="btn-secondary" onclick="restartFlow()">Reiniciar fluxograma</button>
+      </div>
+    </section>
+
+    <section class="flow-area">
+      <div class="node active" id="node-start">
+        <div class="step-badge">INÍCIO</div>
+        <h2>Chegou exame de tomografia sem referência se deve ser feito com contraste ou não</h2>
+        <p>
+          Primeiro, avaliar no GPT/Gemini se a hipótese clínica que consta no pedido deve ser feita com contraste.
+          Depois, confirmar com o radiologista.
+        </p>
+        <div class="actions">
+          <button class="btn-secondary" onclick="askGemini()">
+            Perguntar ao Gemini
+          </button>
+          <button class="btn-warn" onclick="goTo('result-sem-contraste', 'Hipótese clínica avaliada como sem necessidade de contraste.')">
+            Hipótese sem contraste
+          </button>
+          <button class="btn-primary" onclick="goTo('node-2', 'Hipótese clínica avaliada como precisando de contraste, com confirmação do radiologista.')">
+            Hipótese precisa de contraste
+          </button>
+        </div>
+      </div>
+
+      <div class="node" id="node-2">
+        <div class="step-badge">ETAPA 2</div>
+        <h2>Avaliar necessidade de creatinina</h2>
+        <p>Verificar se o paciente se encaixa em algum dos critérios abaixo.</p>
+        <ul>
+          <li>Paciente tem mais de 55 anos</li>
+          <li>Tem hipertensão</li>
+          <li>Tem diabetes</li>
+          <li>Toma metformina</li>
+          <li>Toma remédios para pressão</li>
+          <li>Tem doença renal</li>
+        </ul>
+        <div class="actions">
+          <button class="btn-primary" onclick="goTo('node-3', 'Paciente com mais de 55 anos ou com hipertensão/diabetes/metformina/remédio para pressão/doença renal: solicitar creatinina.')">
+            Sim, tem pelo menos um critério
+          </button>
+          <button class="btn-good" onclick="goTo('result-com-contraste', 'Paciente com menos de 55 anos e sem as doenças citadas: fazer com contraste sem solicitar exames adicionais.')">
+            Não, tem menos de 55 anos e não tem as doenças
+          </button>
+        </div>
+      </div>
+
+      <div class="node" id="node-3">
+        <div class="step-badge">ETAPA 3</div>
+        <h2>Resultado da creatinina</h2>
+        <p>Usar o eGFR informado no exame laboratorial.</p>
+        <div class="actions">
+          <button class="btn-good" onclick="goTo('result-com-contraste', 'Exame de creatinina com eGFR maior ou igual a 45: liberado para fazer com contraste.')">
+            eGFR ≥ 45
+          </button>
+          <button class="btn-bad" onclick="goTo('result-sem-contraste-radiologista', 'Exame de creatinina com eGFR menor que 45: comunicar radiologista para fazer sem contraste.')">
+            eGFR &lt; 45
+          </button>
+        </div>
+      </div>
+
+      <div class="node" id="result-sem-contraste">
+        <div class="result warn">
+          <h3>Conduta final: fazer TC sem contraste</h3>
+          <p>A hipótese clínica foi classificada como sem necessidade de contraste.</p>
+        </div>
+        <div class="toolbar">
+          <button class="btn-secondary" onclick="restartFlow()">Voltar ao início</button>
+        </div>
+      </div>
+
+      <div class="node" id="result-com-contraste">
+        <div class="result good">
+          <h3>Conduta final: fazer TC com contraste</h3>
+          <p>O fluxo levou à liberação do exame com contraste conforme os critérios definidos.</p>
+        </div>
+        <div class="toolbar">
+          <button class="btn-secondary" onclick="restartFlow()">Voltar ao início</button>
+        </div>
+      </div>
+
+      <div class="node" id="result-sem-contraste-radiologista">
+        <div class="result bad">
+          <h3>Conduta final: comunicar radiologista e fazer sem contraste</h3>
+          <p>O eGFR veio abaixo de 45, então o fluxo orienta comunicar o radiologista para realização sem contraste.</p>
+        </div>
+        <div class="toolbar">
+          <button class="btn-secondary" onclick="restartFlow()">Voltar ao início</button>
+        </div>
+      </div>
+
+      <div class="node active" id="path-panel" style="display:block;">
+        <div class="step-badge">TRILHA DA DECISÃO</div>
+        <h2>Resumo do caminho percorrido</h2>
+        <p>Cada clique vai aparecendo aqui para facilitar auditoria visual da decisão.</p>
+        <div class="path-box">
+          <strong>Passos selecionados</strong>
+          <ol id="path-list">
+            <li>Início do fluxograma.</li>
+          </ol>
+        </div>
+        <p class="footer-note">
+          Observação: este website reproduz exatamente os critérios informados no seu pedido, sem alterar os cortes de idade ou eGFR.
+        </p>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const mainNodes = [
+      'node-start',
+      'node-2',
+      'node-3',
+      'result-sem-contraste',
+      'result-com-contraste',
+      'result-sem-contraste-radiologista'
+    ];
+
+    function hideMainNodes() {
+      mainNodes.forEach(id => document.getElementById(id).classList.remove('active'));
+    }
+
+    function goTo(id, description) {
+      hideMainNodes();
+      document.getElementById(id).classList.add('active');
+      addPath(description);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function addPath(text) {
+      const li = document.createElement('li');
+      li.textContent = text;
+      document.getElementById('path-list').appendChild(li);
+    }
+
+    function restartFlow() {
+      hideMainNodes();
+      document.getElementById('node-start').classList.add('active');
+      const pathList = document.getElementById('path-list');
+      pathList.innerHTML = '<li>Início do fluxograma.</li>';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    async function askGemini() {
+      const exame = window.prompt('Exame é do que? Tomografia de qual região?');
+      if (!exame || !exame.trim()) {
+        return;
+      }
+
+      const hipotese = window.prompt('Qual a hipótese diagnóstica que consta no pedido?');
+      if (!hipotese || !hipotese.trim()) {
+        return;
+      }
+
+      const promptGemini = `Você é um assistente de apoio para protocolo de tomografia.
+
+Analise os dados abaixo e responda se, em princípio, a tomografia descrita costuma ser realizada COM CONTRASTE ou SEM CONTRASTE, considerando a hipótese diagnóstica informada.
+
+Dados do caso:
+- Exame: ${exame.trim()}
+- Hipótese diagnóstica do pedido: ${hipotese.trim()}
+
+Instruções de resposta:
+1. Responda de forma objetiva.
+2. Explique brevemente o motivo em 2 a 4 linhas.
+3. Se houver situações em que depende do contexto clínico, diga isso claramente.
+4. Ao final, escreva em uma linha separada, em destaque, com emoji e em formato de título exatamente em um destes dois modelos:
+
+## 💉 COM CONTRASTE
+ou
+## 🚫 SEM CONTRASTE`;
+
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(promptGemini);
+          addPath(`Prompt para Gemini gerado e copiado para a área de transferência. Exame: ${exame.trim()}. Hipótese: ${hipotese.trim()}.`);
+        } else {
+          const temp = document.createElement('textarea');
+          temp.value = promptGemini;
+          document.body.appendChild(temp);
+          temp.select();
+          document.execCommand('copy');
+          document.body.removeChild(temp);
+          addPath(`Prompt para Gemini gerado e copiado por método alternativo. Exame: ${exame.trim()}. Hipótese: ${hipotese.trim()}.`);
+        }
+
+        window.alert('Prompt copiado para a área de transferência. Uma nova aba do Gemini será aberta para você colar.');
+      } catch (error) {
+        window.alert('Não foi possível copiar automaticamente. O prompt será mostrado para cópia manual.');
+        window.prompt('Copie o prompt abaixo:', promptGemini);
+        addPath(`Prompt para Gemini gerado para cópia manual. Exame: ${exame.trim()}. Hipótese: ${hipotese.trim()}.`);
+      }
+
+      window.open('https://gemini.google.com/', '_blank');
+    }
+  </script>
+</body>
+</html>
